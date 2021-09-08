@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<title>HTMLife</title>
+<style>
+	table {
+		border-spacing: 0px;
+	}
+	#gameBoard {
+		border: 3px solid #000000;
+		margin: 10px;
+	}
+	td {
+		width: 10px;
+		height: 10px;
+		border: 1px solid #cccccc;
+		padding: 0;
+	}
+	.dead {
+		background: #ffffff;
+	}
+	.alive {
+		background: #000000;
+	}
+	.pendingKill {
+		background: #ff0000;
+	}
+	.pendingBorn {
+		background: #00ff00;
+	}
+</style>
+<script>
+
+	var rv = ['0.3006673078460791',	'0.07402434794489798',	'0.461459558604839',	'0.12801654195558643',	'0.8235257873819507',	'0.15792659524353814',	'0.34174383993765767',
+			'0.47472580162441114',	'0.02954033100649378',	'0.9703926236792529',	'0.19445101697015021',	'0.15235430303831254',	'0.8115792971708553',	'0.15641169010416167',
+			'0.2061462223259839',	'0.6593087697309405',	'0.35519127898172786',	'0.7952655181052155',	'0.1093036071356216',	'0.5003945857341676',	'0.27848044807311745',
+			'0.836891391896054',	'0.866593756463357',	'0.8642675721585704',	'0.32293917407991335',	'0.6010073225141985',	'0.9607786797674776',	'0.640640550404223',
+			'0.21978674308947987',	'0.646640220930956',	'0.2530604919575169',	'0.784960256584785',	'0.7709262249513402',	'0.12955621262963846',	'0.2010177259397984',
+			'0.4274497775178434',	'0.609401386602217',	'0.5570804743383369',	'0.5932261575260331',	'0.8037642502088935',	'0.4156824065398891',	'0.32203153503795334',
+			'0.6701540063398818',	'0.16036011165524933',	'0.21323904459016207',	'0.4341965052972363',	'0.3284549798323524',	'0.23642299436641756',	'0.23854511044986582',
+			'0.07934372746647655',	'0.32438711749544846',	'0.7254523131036669',	'0.005446962112836351',	'0.23456837061108105',	'0.28496853401176303',	'0.1828121261753608',
+			'0.9421786390531169',	'0.45929060220426676',	'0.31734356539848496',	'0.4029322141961753',	'0.30135796799414927',	'0.3165885946963629',	'0.8996549434045514',
+			'0.7127471796861394',	'0.4714137083226392',	'0.9525706533225564',	'0.7829090282823936',	'0.6607222455418921',	'0.8154535851151332',	'0.2303128288811509',
+			'0.9437850762091786',	'0.7450379512392882',	'0.7608024454847614',	'0.19921188606516238',	'0.9809880666572713',	'0.1995244164313904',	'0.6244315712853533',
+			'0.543286810416193',	'0.5318523558316389',	'0.02795013794919643',	'0.39256651199390047',	'0.6191090322264904',	'0.6254415033910676',	'0.27324427570212784',
+			'0.24832337006946603',	'0.36659142351541596',	'0.5160043330768999',	'0.4097446311358166',	'0.003483166858520237',	'0.5034746568848071',	'0.5888970045877747',
+			'0.6128857024818358',	'0.156556853612853',	'0.5859305069350196',	'0.24871625055110191',	'0.36016538044229673',	'0.24831252469149123',	'0.2086114765703042',
+			'0.6207059367558434',	'0.272033961178818',	'0.9421786390531169',	'0.45929060220426676',	'0.31734356539848496',	'0.4029322141961753',	'0.30135796799414927',
+			'0.3165885946963629',	'0.8996549434045514',	'0.21978674308947987',	'0.646640220930956',	'0.2530604919575169',	'0.3284549798323524',	'0.23642299436641756',
+			'0.9421786390531169',	'0.45929060220426676',	'0.31734356539848496',	'0.4029322141961753',	'0.30135796799414927',	'0.3165885946963629',	'0.8996549434045514',
+			'0.7127471796861394',	'0.4714137083226392',	'0.9525706533225564',	'0.7829090282823936',	'0.6607222455418921',	'0.8154535851151332',	'0.2303128288811509',
+			'0.24832337006946603',	'0.36659142351541596',	'0.5160043330768999',	'0.4097446311358166',	'0.003483166858520237',	'0.5034746568848071',	'0.5888970045877747',
+			'0.6701540063398818',	'0.16036011165524933',	'0.21323904459016207',	'0.4341965052972363',	'0.3284549798323524',	'0.23642299436641756',	'0.23854511044986582',
+			'0.836891391896054',	'0.866593756463357',	'0.8642675721585704',	'0.32293917407991335',	'0.6010073225141985',	'0.9607786797674776',	'0.640640550404223',
+			'0.47472580162441114',	'0.02954033100649378',	'0.9703926236792529',	'0.19445101697015021',	'0.15235430303831254',	'0.8115792971708553',	'0.15641169010416167',
+			'0.543286810416193',	'0.5318523558316389',	'0.02795013794919643',	'0.39256651199390047',	'0.6191090322264904',	'0.6254415033910676',	'0.27324427570212784',
+			'0.6207059367558434',	'0.272033961178818',	'0.9421786390531169',	'0.45929060220426676',	'0.31734356539848496',	'0.4029322141961753',	'0.30135796799414927',
+			'0.4274497775178434',	'0.609401386602217',	'0.5570804743383369',	'0.5932261575260331',	'0.8037642502088935',	'0.4156824065398891',	'0.32203153503795334',
+			'0.3006673078460791',	'0.07402434794489798',	'0.461459558604839',	'0.12801654195558643',	'0.8235257873819507',	'0.15792659524353814',	'0.34174383993765767',
+			'0.2061462223259839',	'0.6593087697309405',	'0.35519127898172786',	'0.7952655181052155',	'0.1093036071356216',	'0.5003945857341676',	'0.27848044807311745',
+			'0.6701540063398818',	'0.16036011165524933',	'0.21323904459016207',	'0.4341965052972363',	'0.3284549798323524',	'0.23642299436641756',	'0.23854511044986582',
+			'0.21978674308947987',	'0.646640220930956',	'0.2530604919575169',	'0.784960256584785',	'0.7709262249513402',	'0.12955621262963846',	'0.2010177259397984',
+			'0.3165885946963629',	'0.8996549434045514',	'0.21978674308947987',	'0.646640220930956',	'0.2530604919575169',	'0.3284549798323524',	'0.23642299436641756',
+			'0.9437850762091786',	'0.7450379512392882',	'0.7608024454847614',	'0.19921188606516238',	'0.9809880666572713',	'0.1995244164313904',	'0.6244315712853533',
+			'0.6128857024818358',	'0.156556853612853',	'0.5859305069350196',	'0.24871625055110191',	'0.36016538044229673',	'0.24831252469149123',	'0.2086114765703042',
+			'0.07934372746647655',	'0.32438711749544846',	'0.7254523131036669',	'0.005446962112836351',	'0.23456837061108105',	'0.28496853401176303',	'0.1828121261753608'];
+
+	var DEAD = 0, ALIVE = 1
+	var cellClasses = ['dead', 'alive']
+	var sim;
+	var isRunning = false;
+	var generation = 0;
+	var rows = 0;
+	var cols = 0;
+	var cells = [];
+	var aliveCells = [];
+
+	function update()
+	{
+		generation++;
+		document.getElementById('generation').innerText = generation;
+
+		var pendingKill = [];
+		var pendingBorn = [];
+
+		for (var i=0;i<aliveCells.length;i++)
+		{
+			var x = aliveCells[i][0];
+			var y = aliveCells[i][1];
+			var neighbors = getAliveNeighbors(x, y);
+			if (getCellState(x, y) == ALIVE && (neighbors.length != 2 && neighbors.length != 3))
+			{
+				pendingKill.push([x, y]);
+			}
+			var neighborCells = getNeighborCells(x, y);
+			for (var n=0;n<neighborCells.length;n++)
+			{
+				var nx = neighborCells[n][0];
+				var ny = neighborCells[n][1];
+				if (getCellState(nx, ny) == DEAD && getAliveNeighbors(nx, ny).length == 3)
+				{
+					pendingBorn.push([nx, ny]);
+				}
+			}
+		}
+		for (var i=0;i<pendingKill.length;i++)
+		{
+			setCellState(pendingKill[i][0], pendingKill[i][1], DEAD);
+		}
+		for (var i=0;i<pendingBorn.length;i++)
+		{
+			setCellState(pendingBorn[i][0], pendingBorn[i][1], ALIVE);
+		}
+	}
+	
+	function startSimulation()
+	{
+		var speed = parseInt(document.getElementById('speed').value);
+		console.log('Starting simulation at ' + speed + ' time(s) per second.');
+		isRunning = true;
+		disableInput();
+		document.getElementById('simbutton').innerText = 'Stop Simulation';
+		sim = setInterval(update, 1000 / speed);
+	}
+	function stopSimulation()
+	{
+		isRunning = false;
+		enableInput();
+		console.log('Stopping simulation.');
+		document.getElementById('simbutton').innerText = 'Start Simulation';
+		clearInterval(sim);
+	}
+	function disableInput() { setInputsReadonly(true); }
+	function enableInput() { setInputsReadonly(false); }
+	function setInputsReadonly(state)
+	{
+		document.getElementById('speed').disabled = state;
+		document.getElementById('rows').disabled = state;
+		document.getElementById('columns').disabled = state;
+	}
+	function clearSimulation()
+	{
+		if (isRunning) { stopSimulation(); }
+		generation = 0;
+		for (var y=0;y<rows;y++)
+		{
+			for (var x=0;x<cols;x++)
+			{
+				setCellState(x, y, DEAD);
+			}
+		}
+		aliveCells = [];
+	}
+	function setupBoard()
+	{
+		if (!isRunning)
+		{
+			clearSimulation();
+			rows = parseInt(document.getElementById('rows').value);
+			cols = parseInt(document.getElementById('columns').value);
+			var board = document.getElementById('gameBoard');
+			board.innerHTML = '';
+
+			for (var y=0;y<rows;y++)
+			{
+				var tr = document.createElement('tr');
+				board.appendChild(tr);
+				cells[y] = [];
+				for (var x=0;x<cols;x++)
+				{
+					var td = document.createElement('td');
+					tr.appendChild(td);
+					td.id = getCellId(x, y);
+					td.onclick = function() {
+						if (!isRunning)
+						{
+							var coords = this.id.split('_');
+							toggleCell(parseInt(coords[0]), parseInt(coords[1]));
+						}
+					};
+					var highlightBorder = '2px solid #8888ff';
+					if (x % 10 == 0) { td.style.borderLeft = highlightBorder; }
+					if (x == cols - 1) { td.style.borderRight = highlightBorder; }
+					if (y % 10 == 0) { td.style.borderTop = highlightBorder; }
+					if (y == rows - 1) { td.style.borderBottom = highlightBorder; }
+					setCellState(x, y, DEAD);
+				}
+			}
+		}
+	}
+	function populateRandomly()
+	{
+		if (!isRunning)
+		{
+			var seed = document.getElementById('randSeed').value;
+			if (!seed)
+			{
+				seed = Math.random().toString();
+			}
+			var bin = '';
+			for (var i=0;i<seed.length;i++)
+			{
+				bin += seed.charCodeAt(i).toString(2);
+			}
+			var newRandVals = shuffleRandomValues(rv, seed);
+			var density = Math.min(Math.max(document.getElementById('randDensity').value, 0), 100);
+			var count = 0;
+			for (var y=0;y<rows;y++)
+			{
+				for (var x=0;x<cols;x++)
+				{
+					if (Math.floor(newRandVals[count] * 100) < density)
+					{
+						setCellState(x, y, ALIVE);
+					}
+					else
+					{
+						setCellState(x, y, DEAD);
+					}
+					count++;
+					if (count == newRandVals.length)
+					{
+						count = 0;
+						newRandVals = shuffleRandomValues(newRandVals, seed);
+					}
+				}
+			}
+		}
+	}
+	function shuffleRandomValues(initialValues, seed)
+	{
+		var r = [...initialValues];
+		var bin = '';
+		for (var i=0;i<seed.length;i++)
+		{
+			bin += seed.charCodeAt(i).toString(2);
+		}
+		
+		r.push(r.splice(0, seed.length % r.length));
+		for (var i=0;i<bin.length;i++)
+		{
+			if (bin[i] == 1)
+			{
+				r.push(r.splice(i % r.length, 1));
+			}
+		}
+		return r;
+	}
+	function toggleCell(x, y)
+	{
+		if (getCellState(x, y) == ALIVE) { return setCellState(x, y, DEAD); }
+		return setCellState(x, y, ALIVE);
+	}
+	function getCellState(x, y)
+	{
+		return cells[y][x];
+	}
+	function setCellState(x, y, state)
+	{
+		var cell = document.getElementById(getCellId(x, y));
+		var prevState = cells[y][x];
+		cells[y][x] = state;
+		cell.className = cellClasses[state];
+		if (prevState == DEAD && state == ALIVE) { addToAliveCells(x, y); }
+		else if (prevState == ALIVE && state == DEAD) { removeFromAliveCells(x, y); }
+		return state;
+	}
+	function removeFromAliveCells(x, y)
+	{
+		for (var i=aliveCells.length-1;i>=0;i--)
+		{
+			if (aliveCells[i][0] == x && aliveCells[i][1] == y)
+			{
+				aliveCells.splice(i, 1);
+				break;
+			}
+		}
+	}
+	function addToAliveCells(x, y)
+	{
+		removeFromAliveCells(x, y);
+		aliveCells.push([x, y]);
+	}
+
+	function getNeighborCells(x, y)
+	{
+		var r = [];
+		if (document.getElementById('wrap').checked)
+		{
+			var maxX = cols-1;
+			var maxY = rows-1;
+			r.push(wrapCoords(x, y-1, maxX, maxY));		// north
+			r.push(wrapCoords(x+1, y-1, maxX, maxY));	// north east
+			r.push(wrapCoords(x+1, y, maxX, maxY));		// east
+			r.push(wrapCoords(x+1, y+1, maxX, maxY));	// south east
+			r.push(wrapCoords(x, y+1, maxX, maxY));		// south
+			r.push(wrapCoords(x-1, y+1, maxX, maxY));	// south west
+			r.push(wrapCoords(x-1, y, maxX, maxY));		// west
+			r.push(wrapCoords(x-1, y-1, maxX, maxY));	// north west
+		}
+		else
+		{
+			if (y > 0) { r.push([x, y-1]); }						// north
+			if (x < cols-1 && y > 0) { r.push([x+1, y-1]); }		// north east
+			if (x < cols-1) { r.push([x+1, y]); }					// east
+			if (x < cols-1 && y < rows-1) { r.push([x+1, y+1]); }	// south east
+			if (y < rows-1) { r.push([x, y+1]); }					// south
+			if (x > 0 && y < rows-1) { r.push([x-1, y+1]); }		// south west
+			if (x > 0) { r.push([x-1, y]); }						// west
+			if (x > 0 && y > 0) { r.push([x-1, y-1]); }				// north west
+		}
+		return r;
+	}
+	function wrapCoords(x, y, maxX, maxY)
+	{
+		return [(x < 0) ? maxX : (x > maxX) ? 0 : x, (y < 0) ? maxY : (y > maxY) ? 0 : y];
+	}
+	function getAliveNeighbors(x, y)
+	{
+		var neighbors = getNeighborCells(x, y);
+		var r = [];
+		for (var i=0;i<neighbors.length;i++)
+		{
+			if (getCellState(neighbors[i][0], neighbors[i][1]) == ALIVE)
+			{
+				r.push([neighbors[i][0], neighbors[i][1]]);
+			}
+		}
+		return r;
+	}
+	function getCellId(x, y)
+	{
+		return x + '_' + y;
+	}
+</script>
+</head>
+<body>
+Gens/Sec: <input type="number" id="speed" value="5" />
+<button type="button" id="simbutton" onclick="if (isRunning) { stopSimulation(); } else { startSimulation(); }">Start Simulation</button>
+<button type="button" onclick="clearSimulation();">Clear Simulation</button>
+Generation: <span id="generation"></span><br />
+Rows: <input type="number" id="rows" value="50" /> Columns: <input type="number" id="columns" value="50" />
+<button type="button" onclick="setupBoard();">Set Up Game Board</button>
+Wrap Board: <input type="checkbox" id="wrap" checked /><br />
+Random Density: <input type="number" id="randDensity" value="10" max="100" min="0" />
+Random Seed: <input type="text" id="randSeed" />
+<button type="button" onclick="populateRandomly();">Populate Randomly</button>
+<table>
+	<tbody id="gameBoard"></tbody>
+</table>
+<script>
+	setupBoard();
+</script>
+</body>
+</html>
